@@ -46,13 +46,13 @@ def locate(arg_needle_image: Union[PIL.Image.Image, str], arg_haystack_image: Un
     return pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
 
 @typechecked
-def locate_in_window(arg_window_title_or_hwnd: Union[str, int], arg_needle_image: Union[PIL.Image.Image, str], arg_region: Optional[Tuple[float, float, float, float]] = None, arg_grayscale: bool = True, arg_confidence: float = 0.95):
+def locate_in_window(arg_window_title_or_hwnd: Union[str, int], arg_needle_image: Union[PIL.Image.Image, str], arg_region: Optional[Tuple[int, int, int, int]] = None, arg_grayscale: bool = True, arg_confidence: float = 0.95):
     ''' Try to find image arg_needle_image in a screenshot of a window. Returns a tuple where the image was found '''
     l_screenshot = screenshot_window(arg_window_title_or_hwnd, arg_region)
     return locate(arg_needle_image, l_screenshot, arg_grayscale, arg_confidence)
 
 @typechecked
-def screenshot_window(arg_window_title_or_hwnd: Union[str, int], arg_region: Optional[Tuple[float, float, float, float]] = None, arg_nFlags_to_PrintWindow: int = 3) -> Optional[PIL.Image.Image]:
+def screenshot_window(arg_window_title_or_hwnd: Union[str, int], arg_region: Optional[Tuple[int, int, int, int]] = None, arg_nFlags_to_PrintWindow: int = 3) -> Optional[PIL.Image.Image]:
     ''' Takes a screenshot of a window (can be in the background)
         If you get a blank image, try to set arg_nFlags_to_PrintWindow = 0 (and test 1, 2 also)
         This is the nFlags to PrintWindow, the documentation say that there can only be PW_CLIENTONLY
