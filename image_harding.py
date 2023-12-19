@@ -18,10 +18,10 @@ __maintainer__ = "Harding"
 __email__ = "not.at.the.moment@example.com"
 __status__ = "Development"
 
+from ctypes import windll
 from typing import Optional, Union, Tuple
 import win32gui
 import win32ui
-from ctypes import windll
 import PIL
 import pyscreeze
 try:
@@ -82,7 +82,7 @@ def screenshot_window(arg_window_title_or_hwnd: Union[str, int], arg_region: Opt
     saveBitMap = win32ui.CreateBitmap()
     saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
     saveDC.SelectObject(saveBitMap)
-    result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), arg_level_down) # https://stackoverflow.com/questions/19695214/screenshot-of-inactive-window-printwindow-win32gui#comment115017065_24352388
+    windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), arg_nFlags_to_PrintWindow) # https://stackoverflow.com/questions/19695214/screenshot-of-inactive-window-printwindow-win32gui#comment115017065_24352388
     bmpinfo = saveBitMap.GetInfo()
     bmpstr = saveBitMap.GetBitmapBits(True)
 
