@@ -8,10 +8,10 @@ This module can take screenshot of windows that are in the background.
 
 STRICT_TYPES = True # If you want to have stict type checking: pip install typeguard
 
-__version__ = 231219_225634
+__version__ = 240208_230154
 __author__ = "Harding"
 __description__ = __doc__
-__copyright__ = "Copyright 2023"
+__copyright__ = "Copyright 2024"
 __credits__ = ["Other projects"]
 __license__ = "GPL"
 __maintainer__ = "Harding"
@@ -29,15 +29,20 @@ try:
         raise ImportError("Skipping the import of typeguard reason: STRICT_TYPES == False")
     from typeguard import typechecked
 except:
+    STRICT_TYPES = False
     from typing import TypeVar
     _T = TypeVar("_T")
 
-    def typechecked(target: _T, **kwargs) -> _T:
-        return target if target else typechecked
+    def typechecked(target: _T, **kwargs) -> _T: # type: ignore
+        return target if target else typechecked # type: ignore
 
 @typechecked
-def locate(arg_needle_image: Union[PIL.Image.Image, str], arg_haystack_image: Union[PIL.Image.Image, str], arg_grayscale: bool = True, arg_confidence: float = 0.95) -> Optional[Tuple[int, int, int, int]]:
-    ''' Try to find image arg_needle_image in arg_haystack_image. Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
+def locate(arg_needle_image: Union[PIL.Image.Image, str],
+           arg_haystack_image: Union[PIL.Image.Image, str],
+           arg_grayscale: bool = True, arg_confidence: float = 0.95
+           ) -> Optional[Tuple[int, int, int, int]]:
+    ''' Try to find image arg_needle_image in arg_haystack_image.
+    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
     if isinstance(arg_needle_image, str):
         arg_needle_image = PIL.Image.open(arg_needle_image)
     if isinstance(arg_haystack_image, str):
@@ -47,19 +52,28 @@ def locate(arg_needle_image: Union[PIL.Image.Image, str], arg_haystack_image: Un
         _tmp = pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
     except:
         return None
-
     if not _tmp:
         return None
     return (_tmp.left, _tmp.top, _tmp.width, _tmp.height)
 
 @typechecked
-def locate_in_window(arg_window_title_or_hwnd: Union[str, int], arg_needle_image: Union[PIL.Image.Image, str], arg_region: Optional[Tuple[int, int, int, int]] = None, arg_grayscale: bool = True, arg_confidence: float = 0.95) -> Optional[Tuple[int, int, int, int]]:
-    ''' Try to find image arg_needle_image in a screenshot of a window. Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
+def locate_in_window(arg_window_title_or_hwnd: Union[str, int],
+                     arg_needle_image: Union[PIL.Image.Image, str],
+                     arg_region: Optional[Tuple[int, int, int, int]] = None,
+                     arg_grayscale: bool = True, arg_confidence: float = 0.95
+                     ) -> Optional[Tuple[int, int, int, int]]:
+    ''' Try to find image arg_needle_image in a screenshot of a window.
+    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
     l_screenshot = screenshot_window(arg_window_title_or_hwnd, arg_region)
+    if l_screenshot is None:
+        return None
     return locate(arg_needle_image, l_screenshot, arg_grayscale, arg_confidence)
 
 @typechecked
-def screenshot_window(arg_window_title_or_hwnd: Union[str, int], arg_region: Optional[Tuple[int, int, int, int]] = None, arg_nFlags_to_PrintWindow: int = 3) -> Optional[PIL.Image.Image]:
+def screenshot_window(arg_window_title_or_hwnd: Union[str, int],
+                      arg_region: Optional[Tuple[int, int, int, int]] = None,
+                      arg_nFlags_to_PrintWindow: int = 3
+                      ) -> Optional[PIL.Image.Image]:
     ''' Takes a screenshot of a window (can be in the background)
         If you get a blank image, try to set arg_nFlags_to_PrintWindow = 0 (and test 1, 2 also)
         This is the nFlags to PrintWindow, the documentation say that there can only be PW_CLIENTONLY
