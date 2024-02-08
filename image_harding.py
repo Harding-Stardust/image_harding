@@ -22,8 +22,8 @@ from ctypes import windll
 from typing import Optional, Union, Tuple
 import win32gui
 import win32ui
-import PIL
-import pyscreeze
+import PIL # pip install pillow
+import pyscreeze # pip install opencv-python
 try:
     if not STRICT_TYPES:
         raise ImportError("Skipping the import of typeguard reason: STRICT_TYPES == False")
@@ -43,7 +43,11 @@ def locate(arg_needle_image: Union[PIL.Image.Image, str], arg_haystack_image: Un
     if isinstance(arg_haystack_image, str):
         arg_haystack_image = PIL.Image.open(arg_haystack_image)
 
-    _tmp = pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
+    try:
+        _tmp = pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
+    except:
+        return None
+
     if not _tmp:
         return None
     return (_tmp.left, _tmp.top, _tmp.width, _tmp.height)
