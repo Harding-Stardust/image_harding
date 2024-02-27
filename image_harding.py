@@ -8,7 +8,7 @@ This module can take screenshot of windows that are in the background.
 
 STRICT_TYPES = True # If you want to have stict type checking: pip install typeguard
 
-__version__ = 240208_230154
+__version__ = 240224_190345
 __author__ = "Harding"
 __description__ = __doc__
 __copyright__ = "Copyright 2024"
@@ -39,35 +39,26 @@ except:
 @typechecked
 def locate(arg_needle_image: Union[PIL.Image.Image, str],
            arg_haystack_image: Union[PIL.Image.Image, str],
-           arg_grayscale: bool = True, arg_confidence: float = 0.95
+           arg_grayscale: bool = True,
+           arg_confidence: float = 0.95
            ) -> Optional[Tuple[int, int, int, int]]:
     ''' Try to find image arg_needle_image in arg_haystack_image.
-    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
+    arg_needle_image: str | PIL.Image.Image     If it's a string, then this is a file path to the image.
+    arg_haystack_image: str | PIL.Image.Image   If it's a string, then this is a file path to the image.
+    
+    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found. Returns None if the image cannot be found. '''
     if isinstance(arg_needle_image, str):
         arg_needle_image = PIL.Image.open(arg_needle_image)
     if isinstance(arg_haystack_image, str):
         arg_haystack_image = PIL.Image.open(arg_haystack_image)
 
     try:
-        _tmp = pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
+        l_located_image = pyscreeze.locate(arg_needle_image, arg_haystack_image, grayscale=arg_grayscale, confidence=arg_confidence)
     except:
         return None
-    if not _tmp:
+    if not l_located_image:
         return None
-    return (_tmp.left, _tmp.top, _tmp.width, _tmp.height)
-
-@typechecked
-def locate_in_window(arg_window_title_or_hwnd: Union[str, int],
-                     arg_needle_image: Union[PIL.Image.Image, str],
-                     arg_region: Optional[Tuple[int, int, int, int]] = None,
-                     arg_grayscale: bool = True, arg_confidence: float = 0.95
-                     ) -> Optional[Tuple[int, int, int, int]]:
-    ''' Try to find image arg_needle_image in a screenshot of a window.
-    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
-    l_screenshot = screenshot_window(arg_window_title_or_hwnd, arg_region)
-    if l_screenshot is None:
-        return None
-    return locate(arg_needle_image, l_screenshot, arg_grayscale, arg_confidence)
+    return (l_located_image.left, l_located_image.top, l_located_image.width, l_located_image.height)
 
 @typechecked
 def screenshot_window(arg_window_title_or_hwnd: Union[str, int],
@@ -78,6 +69,10 @@ def screenshot_window(arg_window_title_or_hwnd: Union[str, int],
         If you get a blank image, try to set arg_nFlags_to_PrintWindow = 0 (and test 1, 2 also)
         This is the nFlags to PrintWindow, the documentation say that there can only be PW_CLIENTONLY
         but that's false, there is at least #define PW_RENDERFULLCONTENT 0x00000002 also
+
+        arg_window_title_or_hwnd: str | int                                   If str: then this is the window title, if int: then this is a HWND (handle to window))
+        arg_region: Tuple[x: int, y: int, width: int, height: int] | None     Cut out the given region from the fullscreen screenshot. If None: return full screenshot
+
     '''
 
     if isinstance(arg_window_title_or_hwnd, int):
@@ -118,6 +113,22 @@ def screenshot_window(arg_window_title_or_hwnd: Union[str, int],
     win32gui.ReleaseDC(hwnd, hwndDC)
 
     if arg_region:
-        res = res.crop(arg_region)
+        arg_region_width_height = (arg_region[0], arg_region[1], arg_region[0] + arg_region[2], arg_region[1] + arg_region[3])
+        res = res.crop(arg_region_width_height)
 
     return res
+
+@typechecked
+def locate_in_window(arg_window_title_or_hwnd: Union[str, int],
+                     arg_needle_image: Union[PIL.Image.Image, str],
+                     arg_region: Optional[Tuple[int, int, int, int]] = None,
+                     arg_grayscale: bool = True,
+                     arg_confidence: float = 0.95
+                     ) -> Optional[Tuple[int, int, int, int]]:
+    ''' Try to find image arg_needle_image in a screenshot of a window.
+    Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
+    l_screenshot: Optional[PIL.Image.Image] = screenshot_window(arg_window_title_or_hwnd, arg_region)
+    if l_screenshot is None:
+        return None
+    return locate(arg_needle_image, l_screenshot, arg_grayscale, arg_confidence)
+
