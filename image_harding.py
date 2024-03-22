@@ -58,7 +58,7 @@ def locate(arg_needle_image: Union[PIL.Image.Image, str],
         return None
     if not l_located_image:
         return None
-    return (l_located_image.left, l_located_image.top, l_located_image.width, l_located_image.height)
+    return (int(l_located_image.left), int(l_located_image.top), int(l_located_image.width), int(l_located_image.height))
 
 @typechecked
 def screenshot_window(arg_window_title_or_hwnd: Union[str, int],
@@ -127,8 +127,10 @@ def locate_in_window(arg_window_title_or_hwnd: Union[str, int],
                      ) -> Optional[Tuple[int, int, int, int]]:
     ''' Try to find image arg_needle_image in a screenshot of a window.
     Returns a Tuple[left: int, top: int, width: int, height: int] where the image was found '''
-    l_screenshot: Optional[PIL.Image.Image] = screenshot_window(arg_window_title_or_hwnd, arg_region)
-    if l_screenshot is None:
-        return None
-    return locate(arg_needle_image, l_screenshot, arg_grayscale, arg_confidence)
+    l_screenshot: Optional[PIL.Image.Image] = screenshot_window(arg_window_title_or_hwnd=arg_window_title_or_hwnd, arg_region=arg_region)
+    l_located = locate(arg_needle_image=arg_needle_image, arg_haystack_image=l_screenshot, arg_grayscale=arg_grayscale, arg_confidence=arg_confidence) if l_screenshot else None
+    if l_located and arg_region:
+        l_located = (l_located[0] + arg_region[0], l_located[1] + arg_region[1], l_located[2], l_located[3])
+
+    return l_located
 
